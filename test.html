@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUI测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+        .test-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-content">
+        <h1>AUI框架测试页面</h1>
+        <p>这是一个用于测试AUI框架的示例页面。</p>
+        <p>你可以看到页面右下角（PC端）或底部中央（移动端）有一个AI助手图标。</p>
+        <p>点击图标可以打开AI助手窗口，与AI进行交互。</p>
+        <p>尝试输入一些内容，比如"发送消息"、"绘制内容"、"跳转到页面"或"叫出租车"，看看会发生什么。</p>
+    </div>
+
+    <!-- 引入Vue和AUI框架 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="module">
+        // 从开发服务器引入AUI
+        import AUI from './src/main.js';
+        
+        // 模拟example.js的配置风格
+        // 注意：在实际使用中，用户可以直接使用require('aui')或import AUI from 'aui'
+        
+        // 使用与example.js完全相同的配置格式
+        var aui = new AUI({
+            icon: {
+                path: './icon.png',
+                width: 32,
+                height: 32,
+                position: 'bottom',
+                description: '打开AI提示'
+            },
+            window: {
+                width: 300,
+                height: 400,
+                position: 'bottom',
+                description: 'AI提示窗口',
+                placeholder: '请输入您的问题'
+            },
+            description: "本网站是一个xxxxx,有xxxx功能",
+            methods: {
+                // 发送消息到指定用户
+                sendMsg: {
+                    description: "这个方法的主要功能是向其它用户发送消息, AI要根据用户的要求，找到接收消息的用户ID并正确发送信息",
+                    method: function(id, msg){
+                        //TODO 发送消息到id用户
+                        console.log('sendMsg', id, msg);
+                        alert('发送消息成功：\n用户ID：' + id + '\n消息内容：' + msg);
+                    },
+                    params: [
+                        {
+                            name: 'id',
+                            type: 'string',
+                            description: '接收消息的用户ID'
+                        },
+                        {
+                            name: 'msg',
+                            type: 'string',
+                            description: '要发送的消息内容'
+                        }
+                    ],
+                    ui: function(){
+                        return {
+                            type: 'input',
+                            cardImg: null,
+                            attention: "请确认发送消息"
+                        }
+                    }
+                },
+                drawSth: {
+                    description: "这个方法的主要功能是在页面中绘制一些内容",
+                    method: function(svg){
+                        //TODO draw svg
+                        console.log('drawSth', svg);
+                        alert('绘制内容成功：\nSVG：' + svg);
+                    },
+                    params: [
+                        {
+                            name: 'svg',
+                            type: 'string',
+                            description: '要绘制的内容, 格式为svg字符串'
+                        }
+                    ],
+                    ui: function(){
+                        return {
+                            type: 'button',
+                            cardImg: "$svg", //通过$符, 可以在img中显示参数的内容
+                            attention: "请确认绘制内容"
+                        }
+                    }
+                },
+                jumpToPageXX: {
+                    description: "这个方法的主要功能是跳转到XXX页面",
+                    method: "https://www.xxx.com", //跳转到XXX页面
+                    ui: function(){
+                        return {
+                            type: 'button',
+                            cardImg: null,
+                            attention: "请确认跳转页面"
+                        }
+                    }
+                },
+                takeATaxi: {
+                    description: "这个方法的主要功能是叫出租车",
+                    method: function(start, end){
+                        //TODO 叫出租车
+                        console.log('takeATaxi', start, end);
+                        alert('叫出租车成功：\n起始位置：' + start + '\n目的地：' + end);
+                    },
+                    params: [
+                        {
+                            name: 'start',
+                            type: 'string',
+                            description: '起始位置'
+                        },
+                        {
+                            name: 'end',
+                            type: 'string',
+                            description: '目的地'
+                        }
+                    ],
+                    ui: function(){
+                        return {
+                            type: 'journey',
+                            start: 'start',
+                            end: 'end',
+                            attention: "请确认叫出租车"
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
