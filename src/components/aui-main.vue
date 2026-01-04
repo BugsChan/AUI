@@ -31,6 +31,7 @@ import { ref, computed, onMounted } from 'vue';
 import auiIcon from './aui-icon.vue';
 import auiWin from './aui-win.vue';
 import auiCard from './aui-card.vue';
+import { getLLMReply } from '../api/llm-api.js';
 
 const props = defineProps({
   options: {
@@ -77,28 +78,17 @@ const hideWindow = () => {
 };
 
 // 处理消息
-const handleMessage = (message) => {
+const handleMessage = async (message) => {
   console.log('Received message:', message);
-  
-  // 模拟等待过程（随机2-4秒）
-  const waitTime = Math.floor(Math.random() * 2000) + 2000;
-  
-  setTimeout(() => {
-    // 随机决定是否生成卡片
-    const shouldGenerateCard = Math.random() > 0.3; // 70%概率生成卡片
-    
-    if (shouldGenerateCard && winRef.value) {
-      // 随机生成一个卡片
-      const randomCard = generateRandomCard();
-      // 调用aui-win暴露的replyCard方法
-      winRef.value.replyCard(randomCard);
-    } else if (winRef.value) {
-      // 普通文本回复
-      const replyContent = `${message}`;
-      // 调用aui-win暴露的replyMessage方法
-      winRef.value.replyMessage(replyContent);
-    }
-  }, waitTime);
+  const res = await getLLMReply(message, props.options);
+  if (typeof(res) === "object" && winRef.value) {
+    // 调用aui-win暴露的replyCard方法
+    winRef.value.replyCard(res);
+  } else if (winRef.value) {
+    // 普通文本回复
+    // 调用aui-win暴露的replyMessage方法
+    winRef.value.replyMessage(res);
+  }
 };
 
 // 随机生成卡片
