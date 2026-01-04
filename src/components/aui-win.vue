@@ -1,4 +1,4 @@
-<template :replyMsg="replyMessage" :replyCard="replyCard">
+<template>
   <div 
     v-if="visible" 
     class="aui-window-container" 
@@ -52,6 +52,17 @@
             <slot name="card" :card="item.data" :onConfirm="handleCardConfirm"></slot>
           </div>
         </template>
+        
+        <!-- 等待动画 -->
+        <div v-if="isWaiting" class="aui-message ai">
+          <div class="aui-message-content">
+            <div class="aui-loading">
+              <div class="aui-loading-dot"></div>
+              <div class="aui-loading-dot"></div>
+              <div class="aui-loading-dot"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -82,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 
 const props = defineProps({
   visible: {
@@ -110,6 +121,7 @@ const isMobile = ref(false);
 const inputValue = ref('');
 const isVoiceActive = ref(false);
 const items = ref([]); // 合并消息和卡片的统一数组
+const isWaiting = ref(false); // 等待状态，用于控制等待动画
 
 // 拖拽相关
 const isDragging = ref(false);
@@ -192,7 +204,10 @@ const replyMessage = (msg) => {
 	  sender: 'ai',
 	  content: msg
 	});
-	scrollToBottom();
+	isWaiting.value = false; // 收到回复，隐藏等待动画
+	nextTick(() => {
+	  scrollToBottom();
+	});
 };
 
 const replyCard = (cardData) => {
@@ -200,7 +215,10 @@ const replyCard = (cardData) => {
 	  type: 'card',
 	  data: cardData
 	});
-	scrollToBottom();
+	isWaiting.value = false; // 收到卡片，隐藏等待动画
+	nextTick(() => {
+	  scrollToBottom();
+	});
 };
 
 // 发送消息
@@ -214,12 +232,17 @@ const sendMessage = () => {
     content: inputValue.value
   });
   
+  // 显示等待动画
+  isWaiting.value = true;
+  
   // 清空输入框
   const message = inputValue.value;
   inputValue.value = '';
   
-  // 滚动到底部
-  scrollToBottom();
+  // 在下一个DOM更新周期后滚动到底部
+  nextTick(() => {
+    scrollToBottom();
+  });
   
   // 发送消息事件
   emit('send-message', message);
@@ -246,7 +269,16 @@ const scrollToBottom = () => {
 
 // 监听消息变化，自动滚动到底部
 watch(items, () => {
-  scrollToBottom();
+  nextTick(() => {
+    scrollToBottom();
+  });
+});
+
+// 监听等待状态变化，自动滚动到底部
+watch(isWaiting, () => {
+  nextTick(() => {
+    scrollToBottom();
+  });
 });
 
 // 暴露方法给父组件
@@ -458,6 +490,41 @@ defineExpose({
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 等待动画样式 */
+.aui-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.aui-loading-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  animation: loading-pulse 1.4s infinite ease-in-out;
+}
+
+.aui-loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.aui-loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loading-pulse {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* 滚动条样式 */

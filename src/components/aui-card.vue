@@ -22,23 +22,24 @@
     <!-- 下方输入框（根据类型） -->
     <div class="aui-card-inputs">
       <!-- input类型：根据params生成输入框 -->
-      <div 
-        v-if="uiConfig.type === 'input' && cardConfig.params" 
-        v-for="(param, index) in cardConfig.params" 
-        :key="index"
-        class="aui-input-group"
-      >
-        <label :for="'param-' + index" class="aui-input-label">
-          {{ param.description }}
-        </label>
-        <input 
-          :id="'param-' + index"
-          type="text" 
-          class="aui-card-input"
-          v-model="paramValues[param.name]"
-          :placeholder="'请输入' + param.name"
-        />
-      </div>
+      <template v-if="uiConfig.type === 'input'">
+        <div 
+          v-for="(param, index) in cardConfig.params.filter(parm => !parm.hidden)"
+          :key="index"
+          class="aui-input-group"
+        >
+          <label :for="'param-' + index" class="aui-input-label">
+            {{ param.description }}
+          </label>
+          <input 
+            :id="'param-' + index"
+            type="text" 
+            class="aui-card-input"
+            v-model="paramValues[param.name]"
+            :placeholder="'请输入' + param.name"
+          />
+        </div>
+      </template>
       
       <!-- journey类型：起始和结束位置输入框 -->
       <div v-else-if="uiConfig.type === 'journey'" class="aui-journey-inputs">
