@@ -19,11 +19,31 @@ export const getLLMReply = async (message, options) => {
  * @returns 上下文信息 string 形式
  */
 const createContext = (options) => {
-  let baseInfo = `你是一个智能助手，你的任务是根据用户的问题和可用的方法，生成符合要求的卡片或普通文本回复。`;
-  return {
-    message: options.message,
-    methods: options.methods,
+
+  let methodsInfo = {};
+  for(let method in options.methods){
+    methodsInfo[method] = {};
+    methodsInfo[method].description = options.methods[method].description;
+    methodsInfo[method].params = options.methods[method].params;
   }
+  let baseInfo = `
+  你是一个只输出 JSON 的 API 接口，不要输出任何解释性文字,
+  严禁使用 ${"```"} 代码块包裹，严禁在 JSON 前后添加任何问候语.
+  该网站的介绍为${options.introduction};
+  可供选择的方法为 ${JSON.stringify(methodsInfo)}
+  你输出的json格式为：
+  {
+    "type": "method", // 可以是 method 或 text
+    "method": "方法名", //当type为method时，必填
+    "arguments": { //参数名和参数值, 该方法有参数时必填
+      "参数名": "参数值"
+    },
+    "text": "普通文本回复" //当type为text时，必填
+  }
+  你可以根据用户的问题和上下文信息，选择合适的方法或直接回复文本,但回复文本也必须符合json格式
+  `;
+
+  return baseInfo;
 }
 
 const requestLLM = async (message, options) => {

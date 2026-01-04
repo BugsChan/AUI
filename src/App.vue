@@ -84,7 +84,7 @@ export default {
               {
                 name: 'id',
                 type: 'string',
-				hidden: true,
+				        hidden: true,
                 description: '接收消息的用户ID'
               },
               {
