@@ -250,7 +250,7 @@ const sendMessage = () => {
 
 // 切换语音输入
 const toggleVoice = () => {
-  isVoiceActive.value = !isVoiceActive.value;
+  //isVoiceActive.value = !isVoiceActive.value;
   // 这里可以添加语音输入逻辑
 };
 
