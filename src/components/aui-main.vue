@@ -83,8 +83,10 @@ const handleMessage = async (message) => {
   const cardMethods = parsedConfig.value.methods;
   const res = await getLLMReply(message, props.options);
   if (typeof(res) === "object" && winRef.value) {
-    // 调用aui-win暴露的replyCard方法
-    winRef.value.replyCard(cardMethods[res.method]);
+    // 调用aui-win暴露的replyCard方法，传递卡片数据和参数
+    const cardData = cardMethods[res.method];
+    const params = res.arguments || {}; // 获取参数，如果不存在则为空对象
+    winRef.value.replyCard(cardData, params);
   } else if (winRef.value) {
     // 普通文本回复
     // 调用aui-win暴露的replyMessage方法

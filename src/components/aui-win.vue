@@ -210,10 +210,17 @@ const replyMessage = (msg) => {
 	});
 };
 
-const replyCard = (cardData) => {
+const replyCard = (cardData, params = {}) => {
+	// 合并卡片数据和参数
+	const cardWithParams = {
+		...cardData,
+		// 将参数对象添加到卡片数据中
+		_params: params
+	};
+	
 	items.value.push({
 	  type: 'card',
-	  data: cardData
+	  data: cardWithParams
 	});
 	isWaiting.value = false; // 收到卡片，隐藏等待动画
 	nextTick(() => {

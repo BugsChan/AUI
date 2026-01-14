@@ -7,12 +7,20 @@
     
     <!-- 中间图片 - 带默认样式 -->
     <div class="aui-card-image-container">
+      <!-- SVG内容 -->
+      <div 
+        v-if="isSvg" 
+        class="aui-card-svg"
+        v-html="cardImage"
+      ></div>
+      <!-- 图片URL -->
       <img 
-        v-if="cardImage" 
+        v-else-if="cardImage" 
         :src="cardImage" 
         alt="Card Image" 
         class="aui-card-image"
       />
+      <!-- 占位符 -->
       <div v-else class="aui-card-image-placeholder">
         <div class="aui-placeholder-icon">📷</div>
         <div class="aui-placeholder-text">暂无图片</div>
@@ -118,12 +126,26 @@ const uiConfig = computed(() => {
 watch(() => props.cardConfig, (newConfig) => {
   if (newConfig.params) {
     const initialValues = {};
+    // 获取预定义的参数值（如果存在）
+    const predefinedParams = newConfig._params || {};
+    
     newConfig.params.forEach(param => {
-      initialValues[param.name] = '';
+      // 如果预定义参数中存在该参数，使用预定义值；否则使用空字符串
+      initialValues[param.name] = predefinedParams[param.name] !== undefined 
+        ? predefinedParams[param.name] 
+        : '';
     });
     paramValues.value = initialValues;
   }
 }, { immediate: true, deep: true });
+
+// 判断是否是SVG内容
+const isSvgContent = (content) => {
+  return typeof content === 'string' && (
+    content.trim().startsWith('<svg') || 
+    content.trim().startsWith('data:image/svg+xml')
+  );
+};
 
 // 计算卡片图片
 const cardImage = computed(() => {
@@ -137,6 +159,12 @@ const cardImage = computed(() => {
   }
   
   return cardImg;
+});
+
+// 计算是否为SVG内容
+const isSvg = computed(() => {
+  const img = cardImage.value;
+  return img ? isSvgContent(img) : false;
 });
 
 // 处理确认按钮点击
@@ -205,6 +233,21 @@ const handleConfirm = () => {
   max-width: 100%;
   max-height: 200px;
   object-fit: contain;
+}
+
+.aui-card-svg {
+  max-width: 100%;
+  max-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  /* 确保SVG能够正确缩放 */
+  svg {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+  }
 }
 
 /* 图片占位样式 */
