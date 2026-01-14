@@ -1,5 +1,9 @@
 import { createApp } from 'vue';
 import AuiMain from './components/aui-main.vue';
+import App from './App.vue';
+
+// 导出组件
+export { AuiMain };
 
 // 创建AUI类
 class AUI {
@@ -38,11 +42,12 @@ export default AUI;
 // 对于直接在浏览器中使用的情况
 if (typeof window !== 'undefined') {
   window.AUI = AUI;
+  // 导出组件到全局作用域，以便可以直接使用
+  window.AUI.AuiMain = AuiMain;
 }
 
-// 用于开发环境的挂载
+// 初始化应用
 if (import.meta.env.DEV) {
-  import('./App.vue').then(({ default: App }) => {
-    createApp(App).mount('#app');
-  });
+  // 开发环境：挂载完整的App组件
+  createApp(App).mount('#app');
 }

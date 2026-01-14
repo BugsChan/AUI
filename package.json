@@ -1,8 +1,19 @@
 {
   "name": "aui",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "private": false,
   "type": "module",
+  "main": "./dist/aui.umd.cjs",
+  "module": "./dist/aui.js",
+  "exports": {
+    ".": {
+      "import": "./dist/aui.js",
+      "require": "./dist/aui.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
