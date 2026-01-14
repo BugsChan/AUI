@@ -58,6 +58,7 @@ export default {
   data() {
     return {
       auiOptions: {
+        passKey: "123456",
         icon: {
           path: "",//'./components/asserts/logo.svg',
           width: 32,

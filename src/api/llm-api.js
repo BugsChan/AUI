@@ -1,4 +1,12 @@
 // LLM API 交互模块
+
+// 服务器地址配置
+const LLM_SERVER_BASE_URL = 'http://localhost:8080';
+const LLM_LOADER_PATH = '/loader.html';
+const LLM_SERVER_URL = `${LLM_SERVER_BASE_URL}${LLM_LOADER_PATH}`;
+
+
+
 /**
  * 
  * @param {string} message 用户询问大模型的问题
@@ -8,8 +16,10 @@
 export const getLLMReply = async (message, options) => {
   try {
     console.log(options);
-    return "good";
+    const reply = await requestLLM(message, options);
+    return reply;
   } catch (error) {
+    console.error('LLM API error:', error);
     return "Error: please retry later.";
   }
 };
@@ -47,22 +57,94 @@ const createContext = (options) => {
 }
 
 const requestLLM = async (message, options) => {
-  try {
-    const response = await fetch('/api/llm', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
+  return new Promise((resolve, reject) => {
+    console.log('开始创建 iframe 请求');
+    
+    // 创建一个没有大小的 iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none'; // 隐藏 iframe
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    iframe.src = LLM_SERVER_URL; // 指向指定的页面
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // 消息监听器
+    const messageHandler = (event) => {
+      // 验证消息来源，确保安全性
+      if (event.origin !== LLM_SERVER_BASE_URL) {
+        console.log('消息来源不匹配，忽略:', event.origin);
+        return;
+      }
+
+      // 处理来自 iframe 的响应
+      const data = event.data;
+      if (data.type === 'response') {
+        console.log('收到响应:', data);
+        // 移除事件监听器和 iframe
+        window.removeEventListener('message', messageHandler);
+        document.body.removeChild(iframe);
+        
+        if (data.success) {
+          resolve(data.content);
+        } else {
+          reject(new Error(data.content || 'Request failed'));
+        }
+      }
+    };
+
+    // 添加事件监听器
+    window.addEventListener('message', messageHandler);
+
+    // 处理 iframe 加载状态
+    iframe.onload = () => {
+      
+      try {
+        // 去除 options 中的所有函数属性，但保留原数据结构
+        const context = createContext(options);
+        
+        
+        // 发送消息
+        iframe.contentWindow.postMessage({
+          type: 'request',
+          message: message,
+          options: context,
+          passKey: options.passKey
+        }, LLM_SERVER_BASE_URL);
+        
+      } catch (error) {
+        reject(error);
+        // 清理资源
+        window.removeEventListener('message', messageHandler);
+        document.body.removeChild(iframe);
+      }
+    };
+
+    // iframe 加载错误处理
+    iframe.onerror = (error) => {
+      reject(new Error('iframe loading failed'));
+      window.removeEventListener('message', messageHandler);
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    };
+
+    // 将 iframe 添加到 DOM 中
+    document.body.appendChild(iframe);
+
+    // 确认 iframe 是否成功添加到 DOM
+    if (!document.body.contains(iframe)) {
+      console.error('iframe 未能成功添加到 DOM');
+      reject(new Error('Failed to append iframe to DOM'));
     }
 
-    const data = await response.json();
-    return data.reply;
-  } catch (error) {
-    return "Error: please retry later.";
-  }
+    // 设置超时机制，防止无限等待
+    const timeout = setTimeout(() => {
+      console.log('请求超时');
+      window.removeEventListener('message', messageHandler);
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+      reject(new Error('Request timeout'));
+    }, 30000); // 30秒超时
+  });
 };

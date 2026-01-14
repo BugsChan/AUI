@@ -80,10 +80,11 @@ const hideWindow = () => {
 // 处理消息
 const handleMessage = async (message) => {
   console.log('Received message:', message);
+  const cardMethods = parsedConfig.value.methods;
   const res = await getLLMReply(message, props.options);
   if (typeof(res) === "object" && winRef.value) {
     // 调用aui-win暴露的replyCard方法
-    winRef.value.replyCard(res);
+    winRef.value.replyCard(cardMethods[res.method]);
   } else if (winRef.value) {
     // 普通文本回复
     // 调用aui-win暴露的replyMessage方法
